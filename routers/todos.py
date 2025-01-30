@@ -43,7 +43,10 @@ class TodoRequest(BaseModel):
 @router.get("/", status_code=status.HTTP_200_OK, response_model=Page[TodoResponse])
 async def read_all_todos(db: db_dependency, params:Params= Depends()):
     todos_query = db.query(Todos)
-    return sqlalchemy_paginate(todos_query, params)
+    pagee = sqlalchemy_paginate(todos_query, params)
+    if not pagee.items and params.page >1:
+        raise HTTPException(status_code=401, detail='Pages not found')     
+    return pagee
 
 @router.get("/todo/{todo_id}", status_code=status.HTTP_202_ACCEPTED)
 async def read_book(user: user_dependency, db: db_dependency, todo_id: int = Path(gt=0)):
